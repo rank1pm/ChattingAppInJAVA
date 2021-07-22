@@ -97,7 +97,6 @@ public class Server extends JFrame implements ActionListener {
 		textArea.setWrapStyleWord(true);
 		add(textArea);
 		
-		
 		setLayout(null);
 		getContentPane().setBackground(new Color(255, 223, 175));
 		setSize(450,700);
@@ -116,12 +115,11 @@ public class Server extends JFrame implements ActionListener {
 			socket=serverSocket.accept();
 			din=new DataInputStream(socket.getInputStream());
 			dout=new DataOutputStream(socket.getOutputStream());
-			
-			inComingMessege=din.readUTF();
-			textArea.setText(textArea.getText()+"\n"+inComingMessege);
-			
-			
-			
+			while(true) {
+				inComingMessege=din.readUTF();
+				textArea.setText(textArea.getText()+"\n"+inComingMessege);		
+			}
+			//serverSocket.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -134,9 +132,9 @@ public class Server extends JFrame implements ActionListener {
 		String sentText=sendTextField.getText();
 		if(sentText!="")
 			textArea.setText(textArea.getText()+"\n\t\t\t"+sentText);
-		dout.writeUTF(sentText);
-		sendTextField.setText("");
 		
+		sendTextField.setText("");
+		dout.writeUTF(sentText);
 			
 		} catch (Exception e2) {
 			// TODO: handle exception

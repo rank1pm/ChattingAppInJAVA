@@ -111,12 +111,16 @@ public class Client extends JFrame implements ActionListener {
 		new Client().setVisible(true);
 		String inComingMessege="";
 		try {
+			
 			socket=new Socket("127.0.0.1", 0505);
 			din=new DataInputStream(socket.getInputStream());
 			dout=new DataOutputStream(socket.getOutputStream());
+			
+			while(true) {
 			inComingMessege=din.readUTF();
 			textArea.setText(textArea.getText()+"\n"+inComingMessege);
 			
+			}
 			
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -129,9 +133,8 @@ public class Client extends JFrame implements ActionListener {
 		try {
 		String sentText=sendTextField.getText();
 		textArea.setText(textArea.getText()+"\n\t\t\t"+sentText);
-		dout.writeUTF(sentText);
 		sendTextField.setText("");
-		
+		dout.writeUTF(sentText);
 			
 		} catch (Exception e2) {
 			// TODO: handle exception
