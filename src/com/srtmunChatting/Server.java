@@ -1,5 +1,6 @@
 package com.srtmunChatting;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
@@ -7,43 +8,51 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
-public class Server extends JFrame implements ActionListener {
+public class Server implements ActionListener {
 	
+	
+	static JFrame serverFrame=new JFrame();
 	JPanel navBar,footBar;
-	static JTextArea textArea;
+	static JPanel textArea;
 	JTextField sendTextField;
 	JButton closeButton,sendTextButton;
 	static ServerSocket serverSocket;
 	static Socket socket;
 	static DataInputStream din;
-	static DataOutputStream dout; 
+	static DataOutputStream dout;
+	static Box verticalBox=Box.createVerticalBox();
+	
 	
 	public Server() {
+		serverFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		navBar=new JPanel();
 		navBar.setLayout(null);
 		navBar.setBackground(new Color(255, 204, 153));
 		navBar.setBounds(0,0,450,80);
-		add(navBar);
+		serverFrame.add(navBar);
 		
 		footBar=new JPanel();
 		footBar.setLayout(null);
 		footBar.setBackground(new Color(255, 204, 153));
 		footBar.setBounds(0,640, 450, 80);
-		add(footBar);
+		serverFrame.add(footBar);
 		
 		ImageIcon logoImageIcon=new ImageIcon(ClassLoader.getSystemResource("com/srtmunChatting/icons/logo.png"));
 		Image logoImage=logoImageIcon.getImage().getScaledInstance(40,60,Image.SCALE_DEFAULT);
@@ -88,27 +97,24 @@ public class Server extends JFrame implements ActionListener {
 		sendTextButton.addActionListener(this);
 		footBar.add(sendTextButton);
 		
-		textArea=new JTextArea();
+		textArea=new JPanel();
 		textArea.setBounds(5,85, 440, 550);
 		textArea.setFont(new Font("TIMES NEW ROMAN",Font.PLAIN,16));
-		textArea.setBackground(new Color(248, 246, 247));
-		textArea.setEditable(false);
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		add(textArea);
+		//textArea.setBackground(new Color(248, 246, 247));
+		serverFrame.add(textArea);
 		
-		setLayout(null);
-		getContentPane().setBackground(new Color(255, 223, 175));
-		setSize(450,700);
-		setLocation(200,90);
-		setUndecorated(true);
-		setVisible(true);
+		serverFrame.setLayout(null);
+		serverFrame.getContentPane().setBackground(new Color(255, 223, 175));
+		serverFrame.setSize(450,700);
+		serverFrame.setLocation(200,90);
+		serverFrame.setUndecorated(true);
+		serverFrame.setVisible(true);
 	}
 	
 	
 	
 	public static void main(String[] args) {
-		new Server().setVisible(true);
+		new Server().serverFrame.setVisible(true);
 		String inComingMessege="";
 		try {
 			serverSocket=new ServerSocket(0505);
@@ -117,7 +123,12 @@ public class Server extends JFrame implements ActionListener {
 			dout=new DataOutputStream(socket.getOutputStream());
 			while(true) {
 				inComingMessege=din.readUTF();
-				textArea.setText(textArea.getText()+"\n"+inComingMessege);		
+				JPanel incomingBoxPanel=formatLabel(inComingMessege);
+				
+				JPanel leftPanel=new JPanel(new BorderLayout());
+				leftPanel.add(incomingBoxPanel,BorderLayout.LINE_START);
+				verticalBox.add(leftPanel);
+				serverFrame.validate();
 			}
 			//serverSocket.close();
 		} catch (Exception e) {
@@ -130,8 +141,15 @@ public class Server extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		try {
 		String sentText=sendTextField.getText();
-		if(sentText!="")
-			textArea.setText(textArea.getText()+"\n\t\t\t"+sentText);
+		JPanel sentBoxPanel=formatLabel(sentText);
+		textArea.setLayout(new BorderLayout());
+		
+		JPanel rightPanel=new JPanel(new BorderLayout());
+		rightPanel.add(sentBoxPanel,BorderLayout.LINE_END);
+		verticalBox.add(rightPanel);
+		verticalBox.add(Box.createVerticalStrut(10));
+		textArea.add(verticalBox,BorderLayout.PAGE_START);
+		serverFrame.validate();
 		
 		sendTextField.setText("");
 		dout.writeUTF(sentText);
@@ -140,5 +158,28 @@ public class Server extends JFrame implements ActionListener {
 			// TODO: handle exception
 		}
 		
+	}
+
+
+
+	private static JPanel formatLabel(String sentText) {
+		JPanel newBoxPanel=new JPanel();
+		newBoxPanel.setLayout(new BoxLayout(newBoxPanel,BoxLayout.Y_AXIS));
+		
+		JLabel textLabel=new JLabel("<html><p style = \"width : 150px\">"+sentText+"</p></html>");
+		textLabel.setFont(new Font("SKati",Font.PLAIN,16));
+		textLabel.setBackground(new Color(255, 204, 153));
+		textLabel.setOpaque(true);
+		textLabel.setBorder(new EmptyBorder(15,15,15,40));
+		
+		Calendar calendar=Calendar.getInstance();
+		SimpleDateFormat formatter=new SimpleDateFormat("HH:mm");
+		
+		JLabel dateLabel=new JLabel(formatter.format(calendar.getTime()));
+		
+		newBoxPanel.add(textLabel);
+		newBoxPanel.add(dateLabel);
+		
+		return newBoxPanel;
 	}
 }
